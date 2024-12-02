@@ -4,15 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [{
-        "name": "Launch day 01 challenge file",
-        "type": "go",
-        "request": "launch",
-        "mode": "debug",
-        "program": "${file}",
-        "cwd": "${fileDirname}\\..\\.."
-    },
-    {
-        "name": "Launch current file with working dir as file dir",
+        "name": "Launch current file",
         "type": "go",
         "request": "launch",
         "mode": "debug",

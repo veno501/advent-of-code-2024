@@ -1,4 +1,4 @@
-module github.com/veno501/advent-of-code-2024/days/01
+module github.com/veno501/advent-of-code-2024/days/01-historian-hysteria
 
 go 1.23.3
 
