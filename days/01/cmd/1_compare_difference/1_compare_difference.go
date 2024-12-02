@@ -40,7 +40,7 @@ func readInput(reader io.Reader) ([]int32, []int32, error) {
 		if !scanner.Scan() {
 			break
 		}
-		n2, err := strconv.Atoi(scanner.Text())
+		n2, err := strconv.ParseInt(scanner.Text(), 10, 32)
 		if err != nil {
 			return l1, l2, fmt.Errorf("read input: %w", err)
 		}
