@@ -1,4 +1,4 @@
-module main
+module github.com/veno501/advent-of-code-2024/days/01
 
 go 1.23.3
 

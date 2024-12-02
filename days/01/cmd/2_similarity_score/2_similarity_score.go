@@ -72,14 +72,14 @@ func compare_lists(filePath string) (int, error) {
 
 	similarity := 0
 	occurences := map[int32]int{}
-	for i := range l2 {
-		if slices.Contains(l1, l2[i]) {
-			occurences[l2[i]] += 1
+	for _, el := range l2 {
+		if slices.Contains(l1, el) {
+			occurences[el] += 1
 		}
 	}
 
-	for key, occuredTimes := range occurences {
-		similarity += int(key) * occuredTimes
+	for _, el := range l1 {
+		similarity += int(el) * occurences[el]
 	}
 
 	return similarity, nil
