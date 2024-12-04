@@ -14,13 +14,6 @@ func Must[T any](v T, err error) T {
 	return v
 }
 
-type DiagonalDirection string
-
-const (
-	〵 DiagonalDirection = "〵"
-	〳 DiagonalDirection = "〳"
-)
-
 func check_for_word(graph [][]byte, word []byte, x int, y int, dir_x int, dir_y int) bool {
 	for i := 0; i < len(word); i++ {
 		X := x + i*dir_x
