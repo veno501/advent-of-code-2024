@@ -112,9 +112,9 @@ func main() {
 	// challenge 2
 
 	num_of_cycles := 0
-	for obstruction_y := range input {
-		for obstruction_x := range input[obstruction_y] {
-			if input[obstruction_y][obstruction_x] != '.' {
+	for obstruction_y := range m {
+		for obstruction_x := range m[obstruction_y] {
+			if m[obstruction_y][obstruction_x] != 'X' {
 				continue
 			}
 
@@ -124,7 +124,6 @@ func main() {
 				copy(m2[i], input[i])
 			}
 			m2[obstruction_y][obstruction_x] = '#'
-			// m2[6][3] = '#'
 
 			guard_x, guard_y := initial_guard_x, initial_guard_y
 			guard_dir_x, guard_dir_y = 0, -1
