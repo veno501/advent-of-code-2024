@@ -70,21 +70,6 @@ func main() {
 
 		for _, permutation := range generatePermutation(len(terms)-1, []rune{'+', '*'}) {
 			if evaluateExpression(terms, permutation) == testValue {
-
-				// fmt.Print(testValue, ": ", terms[0])
-				// for i := range permutation {
-				// 	fmt.Print(" ", string(permutation[i]), " ", terms[i+1])
-				// }
-				// fmt.Println()
-
-				// for _, p := range generatePermutation(len(terms) - 1) {
-				// 	fmt.Print(testValue, ": ", terms[0])
-				// 	for i := range p {
-				// 		fmt.Print(" ", string(p[i]), " ", terms[i+1])
-				// 	}
-				// 	fmt.Println("(", len(generatePermutation(len(terms)-1)), ")")
-				// }
-
 				summed_test_values_with_valid_permutations += testValue
 				break
 			}
@@ -94,21 +79,6 @@ func main() {
 
 		for _, permutation := range generatePermutation(len(terms)-1, []rune{'+', '*', '|'}) {
 			if evaluateExpression(terms, permutation) == testValue {
-
-				// fmt.Print(testValue, ": ", terms[0])
-				// for i := range permutation {
-				// 	fmt.Print(" ", string(permutation[i]), " ", terms[i+1])
-				// }
-				// fmt.Println()
-
-				// for _, p := range generatePermutation(len(terms) - 1) {
-				// 	fmt.Print(testValue, ": ", terms[0])
-				// 	for i := range p {
-				// 		fmt.Print(" ", string(p[i]), " ", terms[i+1])
-				// 	}
-				// 	fmt.Println("(", len(generatePermutation(len(terms)-1)), ")")
-				// }
-
 				summed_test_values_with_valid_permutations_with_concatenation += testValue
 				break
 			}
