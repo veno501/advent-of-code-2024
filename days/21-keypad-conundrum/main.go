@@ -3,20 +3,14 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"math"
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
+	"strings"
 )
 
 type Point struct {
 	x, y int
-}
-
-type Move struct {
-	dx, dy int
-	key    byte
 }
 
 var numericKeypad = map[byte]Point{
@@ -29,11 +23,13 @@ var numericKeypad = map[byte]Point{
 	'1': {0, 2},
 	'2': {1, 2},
 	'3': {2, 2},
+	'_': {0, 3},
 	'0': {1, 3},
 	'A': {2, 3},
 }
 
 var directionalKeypad = map[byte]Point{
+	'_': {0, 0},
 	'^': {1, 0},
 	'A': {2, 0},
 	'<': {0, 1},
@@ -41,147 +37,65 @@ var directionalKeypad = map[byte]Point{
 	'>': {2, 1},
 }
 
-var directionalKeypadPresses = map[string]string{
-	"A^": "<A",
-	"A>": "vA",
-	"Av": "<vA",
-	"A<": "v<<A",
-	"^A": ">A",
-	"^>": "v>A",
-	"^<": "v<A",
-	"^v": "vA",
-	"vA": "^>A",
-	"v>": ">A",
-	"v<": "<A",
-	"v^": "^A",
-	">A": "^A",
-	">^": "<^A",
-	">v": "<A",
-	"><": "<<A",
-	"<A": ">>^A",
-	"<^": ">^A",
-	"<v": ">A",
-	"<>": ">>A",
-}
+func generateSequenceFromTo(fromKey, toKey byte, keypad map[byte]Point) string {
+	from, to := keypad[fromKey], keypad[toKey]
+	dx, dy := to.x-from.x, to.y-from.y
 
-var cache = make(map[string]string)
-
-func dfsFromKeyToKey(from, to byte, keypad *(map[byte]Point)) []string {
-	start, end := (*keypad)[from], (*keypad)[to]
-	// visited := make(map[Point]bool)
-	var paths []string
-
-	var dfs func(current Point, path string)
-	dfs = func(current Point, path string) {
-		if current == end {
-			paths = append(paths, path)
-			return
-		}
-
-		if len(path) > 5 {
-			return
-		}
-
-		// visited[current] = true
-		// 379A  -->>  ^A<<^^A>>AvvvA
-		//       -->>  <A>Av<<AA>^AA>AvAA^A<vAAA>^A
-		//       -->>  <v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
-		for _, move := range []Move{{-1, 0, '<'}, {0, 1, 'v'}, {1, 0, '>'}, {0, -1, '^'}} {
-			next := Point{current.x + move.dx, current.y + move.dy}
-			// if !visited[next] && isValid(next, keypad) {
-			if isValid(next, keypad) {
-				dfs(next, path+string(move.key))
-			}
-		}
-		// visited[current] = false
+	var horizontal string
+	if dx > 0 {
+		horizontal = strings.Repeat(">", dx)
+	} else {
+		horizontal = strings.Repeat("<", -dx)
+	}
+	var vertical string
+	if dy > 0 {
+		vertical = strings.Repeat("v", dy)
+	} else {
+		vertical = strings.Repeat("^", -dy)
 	}
 
-	dfs(start, "")
-	slices.SortFunc(paths, func(a, b string) int {
-		return len(a) - len(b)
-	})
-	return paths
+	gap := keypad['_']
+	if dx > 0 && (gap.x != from.x || gap.y != to.y) {
+		return vertical + horizontal + "A"
+	}
+	if gap.x != to.x || gap.y != from.y {
+		return horizontal + vertical + "A"
+	}
+	return vertical + horizontal + "A"
 }
 
-func getKeyPressSequence(code string, robots int, maxRobots int) string {
+func generateSubSequences(code string, keypad map[byte]Point) []string {
 	seq := "A" + code
-	result := ""
-	// if val, ok := cache[strconv.Itoa(robots)+" "+code]; ok {
-	// 	return val
-	// }
+	var result []string
 	for i := 0; i < len(seq)-1; i++ {
-		if robots > 0 {
-			// if val, ok := cache[strconv.Itoa(robots)+" "+seq[i:i+2]]; ok {
-			// 	result += val
-			// } else {
-			if seq[i] == seq[i+1] {
-				result += "A"
-				// cache[strconv.Itoa(robots)+" "+seq[i:i+2]] = "A"
-			} else {
-				result += directionalKeypadPresses[seq[i:i+2]]
-				// cache[strconv.Itoa(robots)+" "+seq[i:i+2]] = directionalKeypadPresses[seq[i:i+2]]
-			}
-			// }
-		} else {
-			// from, to := (*keypad)[seq[i]], (*keypad)[seq[i+1]]
-			// horizontalDist := abs(from.x - to.x)
-			// var horizontalKeyPresses string
-			// if to.x > from.x {
-			// 	horizontalKeyPresses = strings.Repeat(">", horizontalDist)
-			// } else {
-			// 	horizontalKeyPresses = strings.Repeat("<", horizontalDist)
-			// }
-			// verticalDist := abs(from.y - to.y)
-			// var verticalKeyPresses string
-			// if to.y > from.y {
-			// 	verticalKeyPresses = strings.Repeat("v", verticalDist)
-			// } else {
-			// 	verticalKeyPresses = strings.Repeat("^", verticalDist)
-			// }
-
-			// result += horizontalKeyPresses + verticalKeyPresses + "A"
-			paths := dfsFromKeyToKey(seq[i], seq[i+1], &numericKeypad)
-			minPath, min := "", math.MaxInt
-			for _, path := range paths {
-				// expandedPath := getKeyPressSequence(getKeyPressSequence(path, &directionalKeypad), &directionalKeypad)
-				expandedPath := getKeyPressSequence(path, 1, maxRobots)
-				// fmt.Println(expandedPath)
-				if len(expandedPath) < min {
-					min = len(expandedPath)
-					minPath = path
-				}
-			}
-			fmt.Println()
-			result += minPath + "A"
-			// result += paths[0] + "A"
-		}
+		result = append(result, generateSequenceFromTo(seq[i], seq[i+1], keypad))
 	}
-	if robots < maxRobots {
-		result = getKeyPressSequence(result, robots+1, maxRobots)
-	}
-	// cache[strconv.Itoa(robots)+" "+code] = result
 	return result
+}
+
+func calcSequenceLength(code string, robots int) int {
+	seqCounts := map[string]int{strings.Join(generateSubSequences(code, numericKeypad), ""): 1}
+
+	for iter := 0; iter < robots; iter++ {
+		subSeqCounts := map[string]int{}
+		for seq, count := range seqCounts {
+			for _, subSeq := range generateSubSequences(seq, directionalKeypad) {
+				subSeqCounts[subSeq] += count
+			}
+		}
+		seqCounts = subSeqCounts
+	}
+
+	var seqLength int
+	for seq, count := range seqCounts {
+		seqLength += len(seq) * count
+	}
+	return seqLength
 }
 
 func getNumericValue(code []byte) int {
 	val, _ := strconv.Atoi(string(code[:len(code)-1]))
 	return val
-}
-
-func isValid(pos Point, keypad *(map[byte]Point)) bool {
-	for _, position := range *keypad {
-		if pos == position {
-			return true
-		}
-	}
-	return false
-}
-
-func abs(a int) int {
-	if a < 0 {
-		return -a
-	}
-	return a
 }
 
 func main() {
@@ -192,7 +106,7 @@ func main() {
 
 	var complexity int
 	for _, code := range input {
-		complexity += len(getKeyPressSequence(string(code), 0, 2)) * getNumericValue(code)
+		complexity += calcSequenceLength(string(code), 25) * getNumericValue(code)
 	}
 	fmt.Printf("Complexity: %d\n", complexity)
 }
